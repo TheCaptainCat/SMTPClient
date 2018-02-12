@@ -12,18 +12,29 @@ import java.util.logging.Logger;
  */
 public class Client extends Observable implements Observer {
 
-    public Client() {
+    private Connection connection;
 
+    public Client() {
+        this.connection = null;
     }
 
     public synchronized void setConnection(Connection c) {
-        c.addObserver(this);
-        new Thread(c).start();
+        this.connection = c;
+        this.connection.addObserver(this);
+        new Thread(this.connection).start();
+    }
+
+    public synchronized void fetchMessages() {
+        this.connection.addString("LIST");
+    }
+
+    private synchronized void addMessage(String message) {
+        this.connection.addString(message);
     }
 
     @Override
     public void update(Observable o, Object arg) {
         setChanged();
-        notifyObservers(o);
+        notifyObservers(arg);
     }
 }

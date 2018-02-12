@@ -12,6 +12,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     private JTextField textFieldAddress;
     private JTextField textFieldPort;
     private JButton buttonOk;
+    private JButton buttonGetEmails;
+
+    private Client client;
 
     public GUI() {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -34,28 +37,36 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
         JTextArea textAreaResult = new JTextArea();
-        panelSplitBottom.add(textAreaResult);
+        this.buttonGetEmails = new JButton("Relever les messages");
+        panelSplitBottom.add(textAreaResult, BorderLayout.CENTER);
+        panelSplitBottom.add(this.buttonGetEmails, BorderLayout.SOUTH);
         splitPane.setBottomComponent(panelSplitBottom);
 
         setContentPane(splitPane);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
         setSize(500, 500);
         setVisible(true);
 
-        buttonOk.addActionListener(this);
+        this.buttonOk.addActionListener(this);
+        this.buttonGetEmails.addActionListener(this);
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("CONNECTE");
+        System.out.println((String) arg);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        Client c = new Client();
-        c.addObserver(this);
-        c.setConnection(new Connection(textFieldAddress.getText(), textFieldPort.getText()));
-        buttonOk.setEnabled(false);
+        if (e.getSource() == this.buttonOk) {
+            this.client = new Client();
+            this.client.addObserver(this);
+            this.client.setConnection(new Connection(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText())));
+            this.buttonOk.setEnabled(false);
+        } else if (e.getSource() == this.buttonGetEmails) {
+            this.client.fetchMessages();
+        }
     }
 }

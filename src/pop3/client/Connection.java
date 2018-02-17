@@ -28,29 +28,21 @@ public class Connection extends Observable implements Runnable {
     }
 
     @Override
-    public void run() {
-
+    public synchronized void run() {
         try {
-
             InetAddress serveur = InetAddress.getByName(this.address);
             Socket socket = new Socket(serveur, port);
             PrintStream output = new PrintStream(socket.getOutputStream());
-
             while (this.run) {
                 while (this.strings.size() > 0) {
                     String s = this.strings.poll();
-                    output.println(s);
+                    output.write((s + '\n').getBytes());
+                    output.flush();
                     System.out.println(s);
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String received = in.readLine();
-                    System.out.println(received);
-                    setChanged();
-                    notifyObservers(received);
                 }
+                wait();
             }
-
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -61,5 +53,6 @@ public class Connection extends Observable implements Runnable {
 
     public synchronized void addString(String s) {
         this.strings.add(s);
+        notify();
     }
 }

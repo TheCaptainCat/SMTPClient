@@ -1,8 +1,6 @@
 package pop3.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -30,8 +28,8 @@ public class Connection extends Observable implements Runnable {
     @Override
     public synchronized void run() {
         try {
-            InetAddress serveur = InetAddress.getByName(this.address);
-            Socket socket = new Socket(serveur, port);
+            InetAddress server = InetAddress.getByName(this.address);
+            Socket socket = new Socket(server, port);
             PrintStream output = new PrintStream(socket.getOutputStream());
             while (this.run) {
                 while (this.strings.size() > 0) {

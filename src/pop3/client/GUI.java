@@ -1,5 +1,9 @@
 package pop3.client;
 
+import pop3.client.Commands.ApopCommand;
+import pop3.client.Commands.Command;
+import pop3.client.Commands.ConnectionCommand;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -69,24 +73,43 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println((String) arg);
+        Command command = (Command)arg;
+        if (command instanceof ConnectionCommand) {
+            if (!command.isError()) {
+                this.textAreaResult.setText("Connexion au serveur réussie.");
+                this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
+            } else {
+                this.textAreaResult.setText("Impossible de se connecter au serveur.");
+            }
+        } else if (command instanceof ApopCommand) {
+            if (!command.isError()) {
+                this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentification réussie.");
+                this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
+            } else {
+                this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentifiant ou mot de passe incorrect.");
+            }
+        }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.buttonOk) {
-            try {
+            if (this.client == null || !this.client.isConnected()) {
                 this.client = new Client(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText()));
                 this.client.addObserver(this);
-                this.buttonOk.setEnabled(false);
-                this.buttonGetEmails.setEnabled(true);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-                this.textAreaResult.setText("Impossible de se connecter au serveur");
-                return;
+                this.client.connect();
+            } else {
+                // The client exists and is connected to the server
+                // If he is not logged in yet, let's try...
+
+                if (!this.client.isLoggedIn()) {
+                    this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
+                } else {
+                    System.out.println("Déjà connecté");
+                }
+
             }
 
-            this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
         } else if (e.getSource() == this.buttonGetEmails) {
             this.client.fetchMessages();
         }

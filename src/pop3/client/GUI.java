@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -38,6 +39,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
         JTextArea textAreaResult = new JTextArea();
         this.buttonGetEmails = new JButton("Relever les messages");
+        this.buttonGetEmails.setEnabled(false);
         panelSplitBottom.add(textAreaResult, BorderLayout.CENTER);
         panelSplitBottom.add(this.buttonGetEmails, BorderLayout.SOUTH);
         splitPane.setBottomComponent(panelSplitBottom);
@@ -61,10 +63,14 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.buttonOk) {
-            this.client = new Client();
-            this.client.addObserver(this);
-            this.client.setConnection(new Connection(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText())));
-            this.buttonOk.setEnabled(false);
+            try {
+                this.client = new Client(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText()));
+                this.client.addObserver(this);
+                this.buttonOk.setEnabled(false);
+                this.buttonGetEmails.setEnabled(true);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         } else if (e.getSource() == this.buttonGetEmails) {
             this.client.fetchMessages();
         }

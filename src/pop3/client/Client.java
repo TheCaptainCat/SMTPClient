@@ -1,35 +1,40 @@
 package pop3.client;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Le client est concurent. Il permet d'envoyer des requêtes vers le serveur.
+ * Une connexion permet de faire une requête vers le serveur et attend la réponse.
  */
 public class Client extends Observable implements Observer {
 
-    private Connection connection;
+    private Receiver receiver;
+    private Sender sender;
 
-    public Client() {
-        this.connection = null;
+    public Client(String address, int port) throws IOException {
+        InetAddress server = InetAddress.getByName(address);
+        Socket socket = new Socket(server, port);
+        this.receiver = new Receiver(socket);
+        this.sender = new Sender(socket);
+
+        new Thread(this.receiver).start();
+        new Thread(this.sender).start();
     }
 
-    public synchronized void setConnection(Connection c) {
-        this.connection = c;
-        this.connection.addObserver(this);
-        new Thread(this.connection).start();
+    public synchronized void stop(boolean run) {
+        this.receiver.stop();
+        this.sender.stop();
+    }
+
+    public synchronized void addString(String s) {
+        this.sender.sendPacket(new Packet(s));
     }
 
     public synchronized void fetchMessages() {
-        this.connection.addString("LIST");
-    }
-
-    private synchronized void addMessage(String message) {
-        this.connection.addString(message);
+        this.sender.sendPacket(new Packet("LIST"));
     }
 
     @Override

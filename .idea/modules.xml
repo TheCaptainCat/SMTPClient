@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/POP3Client.iml" filepath="$PROJECT_DIR$/.idea/POP3Client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/POP3Client.iml" filepath="$PROJECT_DIR$/POP3Client.iml" />
     </modules>
   </component>
 </project>

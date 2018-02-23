@@ -29,8 +29,8 @@ public class Client extends Observable implements Observer {
         this.sender.stop();
     }
 
-    public synchronized void addString(String s) {
-        this.sender.sendPacket(new Packet(s));
+    public synchronized void performApop(String username, String password) {
+        this.sender.sendPacket(new Packet(String.format("APOP %s %s", username, Hasher.getHash(password))));
     }
 
     public synchronized void fetchMessages() {

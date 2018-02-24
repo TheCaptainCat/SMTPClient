@@ -1,6 +1,7 @@
 package pop3.client.Commands;
 
 import pop3.client.Client;
+import pop3.client.Message;
 import pop3.client.Notification;
 import pop3.client.NotificationType;
 
@@ -34,11 +35,21 @@ public class RetrCommand extends Command {
             if (!result.equals(".")) {
                 this.result.add(result);
             } else {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 1; i < this.result.size(); i++) {
-                    sb.append(this.result.get(i)).append('\n');
+                Message message = new Message();
+                for (int i = 0; i < this.result.size(); i++) {
+                    String line = this.result.get(i);
+                    if (line.startsWith("FROM")) {
+                        message.setFrom(line);
+                        System.out.println("from");
+                    } else if (line.startsWith("TO")) {
+                        message.setTo(line);
+                    } else if (line.startsWith("CC")) {
+                        message.setCc(line);
+                    } else {
+                        message.setBody(message.getBody() + '\n' + line);
+                    }
                 }
-                this.client.setRetreivedMessage(sb.toString());
+                this.client.setRetreivedMessage(message);
             }
         }
     }

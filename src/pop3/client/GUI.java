@@ -22,11 +22,15 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
     private JTextField textFieldAddress;
     private JTextField textFieldPort;
     private JTextField textFieldUsername;
+    private JTextField textFieldFrom;
+    private JTextField textFieldTo;
+    private JTextField textFieldCc;
     private JPasswordField textFieldPassword;
     private JButton buttonOk;
     private JButton buttonGetEmails;
     private JTextArea textAreaResult;
     private DefaultListModel<String> model;
+    private List<Message> messages;
 
     private Client client;
 
@@ -59,7 +63,19 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         panelSplitTop.add(this.buttonOk);
 
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
+
+        JPanel panelMessageAndHeader = new JPanel(new BorderLayout());
+        JPanel panelHeader = new JPanel(new GridLayout(0,1));
+        this.textFieldTo = new JTextField("");
+        panelHeader.add(this.textFieldTo);
+        this.textFieldFrom = new JTextField("");
+        panelHeader.add(this.textFieldFrom);
+        this.textFieldCc = new JTextField("");
+        panelHeader.add(this.textFieldCc);
         this.textAreaResult = new JTextArea();
+        panelMessageAndHeader.add(panelHeader, BorderLayout.NORTH);
+        panelMessageAndHeader.add(this.textAreaResult, BorderLayout.CENTER);
+
         this.buttonGetEmails = new JButton("Relever les messages");
         this.buttonGetEmails.setEnabled(false);
         this.model = new DefaultListModel<>();
@@ -73,7 +89,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         listMessages.addMouseListener(this);
 
         panelSplitBottom.add(scrollPane_1, BorderLayout.WEST);
-        panelSplitBottom.add(this.textAreaResult, BorderLayout.CENTER);
+        panelSplitBottom.add(panelMessageAndHeader, BorderLayout.CENTER);
         panelSplitBottom.add(this.buttonGetEmails, BorderLayout.SOUTH);
         splitPane.setBottomComponent(panelSplitBottom);
 
@@ -81,7 +97,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setSize(500, 500);
+        setSize(700, 400);
         setVisible(true);
 
         this.buttonOk.addActionListener(this);
@@ -108,10 +124,11 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 this.showErrorDialog("Impossible de relever le message.");
                 break;
             case RETR_ALL_MESSAGES_OK:
-                List<String> messages = (List<String>) notification.getArguments();
-                for (String message : messages) {
-                    this.model.addElement(message);
+                List<Message> messages = (List<Message>) notification.getArguments();
+                for (Message message : messages) {
+                    this.model.addElement(message.getBody());
                 }
+                this.messages = messages;
                 break;
         }
     }
@@ -150,8 +167,13 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         if (evt.getClickCount() == 2) {
 
             // Double-click detected
+
             int index = list.locationToIndex(evt.getPoint());
-            this.textAreaResult.setText((String) list.getModel().getElementAt(index));
+            Message message = this.messages.get(index);
+            this.textAreaResult.setText(message.getBody());
+            this.textFieldTo.setText(message.getTo());
+            this.textFieldFrom.setText(message.getFrom());
+            this.textFieldCc.setText(message.getCc());
         }
     }
 

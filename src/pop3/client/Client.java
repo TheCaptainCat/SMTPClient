@@ -30,7 +30,7 @@ public class Client extends Observable implements Observer {
     private boolean isRetrievingMessages;
     private List<String> messageIdsToRetrieve;
     private int messageIndexToRetrieve;
-    private List<String> retrieveMessagesResult;
+    private List<Message> retrieveMessagesResult;
 
     private Command lastCommand;
 
@@ -117,7 +117,7 @@ public class Client extends Observable implements Observer {
         this.sender.sendPacket(new Packet(String.format("RETR %s", id)));
     }
 
-    public synchronized void setRetreivedMessage(String message) {
+    public synchronized void setRetreivedMessage(Message message) {
         if (this.isRetrievingMessages) {
             this.retrieveMessagesResult.add(message);
             this.retrieveNextMessage();

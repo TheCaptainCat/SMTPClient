@@ -2,15 +2,12 @@ package pop3.client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class GUI extends javax.swing.JFrame implements Observer, ActionListener, MouseListener {
+public class GUI extends javax.swing.JFrame implements Observer, ActionListener, MouseListener, WindowListener {
 
     private final static int NO_MESSAGE_SELECTED = -1;
 
@@ -30,6 +27,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
     private List<Message> messages;
     private JButton buttonDelete;
     private int selectedMessageId;
+    private boolean waitingBeforeClosing;
 
     private Client client;
 
@@ -109,7 +107,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
         setContentPane(splitPane);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
         setSize(700, 500);
         setVisible(true);
@@ -118,6 +117,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         this.buttonGetEmails.addActionListener(this);
 
         this.selectedMessageId = NO_MESSAGE_SELECTED;
+
+        this.addWindowListener(this);
+        this.waitingBeforeClosing = false;
     }
 
     @Override
@@ -155,10 +157,19 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 this.model = new DefaultListModel<>();
                 this.listMessages.setModel(this.model);
                 clearFields();
+
                 this.client = null;
+                if (this.waitingBeforeClosing) {
+                    this.close();
+                }
                 break;
             case QUIT_FAILED:
                 this.showErrorDialog("Erreur lors de la déconnexion. Certains messages marqués comme supprimés pourraient ne pas l'être.");
+
+                this.client = null;
+                if (this.waitingBeforeClosing) {
+                    this.close();
+                }
                 break;
             case DELE_OK:
                 this.selectedMessageId = NO_MESSAGE_SELECTED;
@@ -253,6 +264,50 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
     @Override
     public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void windowOpened(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        this.close();
+    }
+
+    public void close() {
+        if (this.client != null && this.client.isConnected()) {
+            this.waitingBeforeClosing = true;
+            this.client.logout();
+        } else {
+            System.exit(0);
+        }
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowIconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowActivated(WindowEvent e) {
+
+    }
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {
 
     }
 }

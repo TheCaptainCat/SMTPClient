@@ -82,6 +82,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
         this.buttonDelete = new JButton("Supprimer");
         this.buttonDelete.addActionListener(this);
+        this.buttonDelete.setEnabled(false);
 
         panelHeader.add(panelHeaderCenter, BorderLayout.CENTER);
         panelHeader.add(this.buttonDelete, BorderLayout.EAST);
@@ -178,6 +179,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         this.textFieldFrom.setText("");
         this.textFieldCc.setText("");
         this.textAreaResult.setText("");
+        this.buttonDelete.setEnabled(false);
     }
 
     @Override
@@ -222,8 +224,6 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         JList list = (JList)evt.getSource();
         if (evt.getClickCount() == 2) {
 
-            // Double-click detected
-
             int index = list.locationToIndex(evt.getPoint());
             Message message = this.messages.get(index);
             this.textAreaResult.setText(message.getBody());
@@ -232,6 +232,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             this.textFieldCc.setText(message.getCc());
             this.textFieldSubject.setText(message.getSubject());
             this.selectedMessageId = message.getId();
+            this.buttonDelete.setEnabled(true);
         }
     }
 

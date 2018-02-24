@@ -10,11 +10,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-public class GUI extends javax.swing.JFrame implements Observer, ActionListener {
+public class GUI extends javax.swing.JFrame implements Observer, ActionListener, MouseListener {
 
     private JTextField textFieldAddress;
     private JTextField textFieldPort;
@@ -61,7 +64,15 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         this.buttonGetEmails.setEnabled(false);
         this.model = new DefaultListModel<>();
         JList listMessages = new JList(model);
-        panelSplitBottom.add(listMessages, BorderLayout.WEST);
+        listMessages.setVisibleRowCount(5);
+        JScrollPane scrollPane_1 = new JScrollPane(listMessages);
+        Dimension d = listMessages.getPreferredSize();
+        d.width = 200;
+        scrollPane_1.setPreferredSize(d);
+
+        listMessages.addMouseListener(this);
+
+        panelSplitBottom.add(scrollPane_1, BorderLayout.WEST);
         panelSplitBottom.add(this.textAreaResult, BorderLayout.CENTER);
         panelSplitBottom.add(this.buttonGetEmails, BorderLayout.SOUTH);
         splitPane.setBottomComponent(panelSplitBottom);
@@ -97,7 +108,10 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                 this.showErrorDialog("Impossible de relever le message.");
                 break;
             case RETR_ALL_MESSAGES_OK:
-                System.out.println("TODO display messages");
+                List<String> messages = (List<String>) notification.getArguments();
+                for (String message : messages) {
+                    this.model.addElement(message);
+                }
                 break;
         }
     }
@@ -128,5 +142,36 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
     public void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent evt) {
+        JList list = (JList)evt.getSource();
+        if (evt.getClickCount() == 2) {
+
+            // Double-click detected
+            int index = list.locationToIndex(evt.getPoint());
+            this.textAreaResult.setText((String) list.getModel().getElementAt(index));
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
     }
 }

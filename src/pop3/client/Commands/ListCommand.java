@@ -29,10 +29,16 @@ public class ListCommand extends Command {
                 this.error = true;
             }
         } else {
-            this.result.add(result);
-            if (this.result.size() == this.numberOfMessages) {
+            if (!result.equals(".")) {
+                this.result.add(result.split(" ")[0]);
+                /*
+                if (this.result.size() == this.numberOfMessages) {
+
+                }*/
+            } else {
                 this.client.retrieveMessages(this.result);
             }
+
         }
     }
 }

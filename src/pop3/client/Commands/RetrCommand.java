@@ -9,24 +9,18 @@ import java.util.regex.Pattern;
 
 public class RetrCommand extends Command {
 
-    private static final int NOT_SET = -1;
-
-    private int numberOfMessages;
+    private boolean hasRecievedOk;
 
     public RetrCommand(Client client) {
         super(client);
-        this.numberOfMessages = NOT_SET;
+        this.hasRecievedOk = false;
     }
 
     @Override
     public void handleResult(String result) {
-        if (this.numberOfMessages == NOT_SET) {
-            Pattern p = Pattern.compile("\\+OK (\\d+) octets");
-            Matcher m = p.matcher(result);
-
-            if (m.matches()) {
-                this.numberOfMessages = Integer.parseInt(m.group(1));
-                this.error = false;
+        if (!this.hasRecievedOk) {
+            if (result.startsWith("+OK")) {
+                this.hasRecievedOk = true;
             } else {
                 this.error = true;
                 this.client.notifyGUI(
@@ -40,7 +34,11 @@ public class RetrCommand extends Command {
             if (!result.equals(".")) {
                 this.result.add(result);
             } else {
-                this.client.setRetreivedMessage(this.result.get(0));
+                StringBuilder sb = new StringBuilder();
+                for (int i = 1; i < this.result.size(); i++) {
+                    sb.append(this.result.get(i)).append('\n');
+                }
+                this.client.setRetreivedMessage(sb.toString());
             }
         }
     }

@@ -1,8 +1,10 @@
 package pop3.client;
 
+import com.sun.org.apache.xpath.internal.SourceTree;
 import pop3.client.Commands.ApopCommand;
 import pop3.client.Commands.Command;
 import pop3.client.Commands.ConnectionCommand;
+import pop3.client.Commands.ListCommand;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +23,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     private JButton buttonOk;
     private JButton buttonGetEmails;
     private JTextArea textAreaResult;
+    private DefaultListModel<String> model;
 
     private Client client;
 
@@ -56,6 +59,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         this.textAreaResult = new JTextArea();
         this.buttonGetEmails = new JButton("Relever les messages");
         this.buttonGetEmails.setEnabled(false);
+        this.model = new DefaultListModel<>();
+        JList listMessages = new JList(model);
+        panelSplitBottom.add(listMessages, BorderLayout.WEST);
         panelSplitBottom.add(this.textAreaResult, BorderLayout.CENTER);
         panelSplitBottom.add(this.buttonGetEmails, BorderLayout.SOUTH);
         splitPane.setBottomComponent(panelSplitBottom);
@@ -73,20 +79,20 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
     @Override
     public void update(Observable o, Object arg) {
-        Command command = (Command)arg;
-        if (command instanceof ConnectionCommand) {
-            if (!command.isError()) {
-                this.textAreaResult.setText("Connexion au serveur réussie.");
-                this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
-            } else {
-                this.textAreaResult.setText("Impossible de se connecter au serveur.");
-            }
-        } else if (command instanceof ApopCommand) {
-            if (!command.isError()) {
-                this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentification réussie.");
-            } else {
-                this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentifiant ou mot de passe incorrect.");
-            }
+        Notification notification = (Notification) arg;
+        switch (notification.getType()) {
+            case CONNECTION_FAILED:
+                this.showErrorDialog("Impossible de se connecter au serveur.");
+                break;
+            case CONNECTION_OK:
+                System.out.println("Connecté au serveur !");
+                break;
+            case APOP_OK:
+                System.out.println("Identification réussie");
+                break;
+            case APOP_FAILED:
+                this.showErrorDialog("Identifiant ou mot de passe incorrect.");
+                break;
         }
     }
 
@@ -96,7 +102,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
             if (this.client == null || !this.client.isConnected()) {
                 this.client = new Client(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText()));
                 this.client.addObserver(this);
-                this.client.connect();
+                this.client.connect(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
             } else {
                 // The client exists and is connected to the server
                 // If he is not logged in yet, let's try...
@@ -110,7 +116,11 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
             }
 
         } else if (e.getSource() == this.buttonGetEmails) {
-            this.client.fetchMessages();
+            this.client.listMessages();
         }
+    }
+
+    public void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE);
     }
 }

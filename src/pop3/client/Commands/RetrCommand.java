@@ -5,13 +5,13 @@ import pop3.client.Client;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ListCommand extends Command {
+public class RetrCommand extends Command {
 
     private static final int NOT_SET = -1;
 
     private int numberOfMessages;
 
-    public ListCommand(Client client) {
+    public RetrCommand(Client client) {
         super(client);
         this.numberOfMessages = NOT_SET;
     }
@@ -19,16 +19,17 @@ public class ListCommand extends Command {
     @Override
     public void handleResult(String result) {
         if (this.numberOfMessages == NOT_SET) {
-            Pattern p = Pattern.compile("\\+OK (\\d+) messages");
+            Pattern p = Pattern.compile("\\+OK (\\d+) octets");
             Matcher m = p.matcher(result);
 
             if (m.matches()) {
                 this.numberOfMessages = Integer.parseInt(m.group(1));
             }
         } else {
-            this.result.add(result);
-            if (this.result.size() == this.numberOfMessages) {
-                System.out.println("termine");
+            if (result.equals(".")) {
+                // TODO
+            } else {
+                this.result.add(result);
             }
         }
     }

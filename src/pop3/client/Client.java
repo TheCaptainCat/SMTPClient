@@ -1,13 +1,11 @@
 package pop3.client;
 
-import pop3.client.Commands.ApopCommand;
-import pop3.client.Commands.Command;
-import pop3.client.Commands.ConnectionCommand;
-import pop3.client.Commands.ListCommand;
+import pop3.client.Commands.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -25,6 +23,9 @@ public class Client extends Observable implements Observer {
     private boolean connected;
     private boolean loggedIn;
 
+    private String username;
+    private String password;
+
     private Command lastCommand;
 
     public Client(String address, int port) {
@@ -35,15 +36,18 @@ public class Client extends Observable implements Observer {
         this.lastCommand = null;
     }
 
-    public boolean connect() {
-        this.lastCommand = new ConnectionCommand();
+    public void connect(String username, String password) {
+        this.username = username;
+        this.password = password;
+        this.lastCommand = new ConnectionCommand(this);
 
         Socket socket = null;
         try {
             InetAddress server = InetAddress.getByName(address);
             socket = new Socket(server, port);
         } catch (IOException e) {
-            return false;
+            this.setConnected(false);
+            ((ConnectionCommand)this.lastCommand).connectionFailed();
         }
 
         this.receiver = new Receiver(socket);
@@ -53,9 +57,10 @@ public class Client extends Observable implements Observer {
 
         new Thread(this.receiver).start();
         new Thread(this.sender).start();
-        this.connected = true;
+    }
 
-        return true;
+    public void setConnected(boolean value) {
+        this.connected = value;
     }
 
     public boolean isConnected() {
@@ -75,20 +80,37 @@ public class Client extends Observable implements Observer {
         this.sender.stop();
     }
 
-    public synchronized void performApop(String username, String password) {
-        this.sender.sendPacket(new Packet(String.format("APOP %s %s", username, Hasher.getHash(password))));
-        this.lastCommand = new ApopCommand(this);
+    public synchronized void performApop() {
+        this.performApop(this.username, this.password);
     }
 
-    public synchronized void fetchMessages() {
+    public synchronized void performApop(String username, String password) {
+        this.lastCommand = new ApopCommand(this);
+        this.sender.sendPacket(new Packet(String.format("APOP %s %s", username, Hasher.getHash(password))));
+    }
+
+    public synchronized void listMessages() {
+        this.lastCommand = new ListCommand(this);
         this.sender.sendPacket(new Packet("LIST"));
-        this.lastCommand = new ListCommand();
+    }
+
+    public synchronized void retreiveMessages(List<String> ids) {
+
+    }
+
+    public synchronized void retreiveMessage(String id) {
+        this.lastCommand = new RetrCommand(this);
+        this.sender.sendPacket(new Packet(String.format("RETR %s", id)));
+    }
+
+    public void notifyGUI(Notification notification) {
+        setChanged();
+        notifyObservers(notification);
     }
 
     @Override
     public void update(Observable o, Object arg) {
+        System.out.println(arg);
         this.lastCommand.handleResult((String) arg);
-        setChanged();
-        notifyObservers(this.lastCommand);
     }
 }

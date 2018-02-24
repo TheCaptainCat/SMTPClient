@@ -12,7 +12,7 @@ public class ApopCommand extends Command {
 
     @Override
     public void handleResult(String result) {
-        this.error = !result.equals("+OK");
+        this.error = !result.startsWith("+OK");
         this.client.setLoggedIn(!this.error);
     }
 }

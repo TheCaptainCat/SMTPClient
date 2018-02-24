@@ -84,7 +84,6 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         } else if (command instanceof ApopCommand) {
             if (!command.isError()) {
                 this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentification réussie.");
-                this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
             } else {
                 this.textAreaResult.setText(this.textAreaResult.getText() + "\nIdentifiant ou mot de passe incorrect.");
             }

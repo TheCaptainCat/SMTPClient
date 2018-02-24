@@ -113,7 +113,7 @@ public class Client extends Observable implements Observer {
     }
 
     public synchronized void retrieveMessage(String id) {
-        this.lastCommand = new RetrCommand(this);
+        this.lastCommand = new RetrCommand(this, Integer.parseInt(id));
         this.sender.sendPacket(new Packet(String.format("RETR %s", id)));
     }
 
@@ -139,6 +139,11 @@ public class Client extends Observable implements Observer {
                 );
             }
         }
+    }
+
+    public void deleteMessage(int id) {
+        this.lastCommand = new DeleCommand(this);
+        this.sender.sendPacket(new Packet(String.format("DELE %d", id)));
     }
 
     public void logout() {

@@ -1,18 +1,20 @@
 package pop3.client;
 
 public class Message {
+    private int id;
     private String to;
     private String from;
     private String cc;
     private String subject;
     private String body;
 
-    public Message() {
+    public Message(int id) {
         this.to = "";
         this.from = "";
         this.cc = "";
         this.body = "";
         this.subject = "";
+        this.id = id;
     }
 
     public String getTo() {
@@ -57,5 +59,9 @@ public class Message {
 
     public void setSubject(String subject) {
         this.subject = subject;
+    }
+
+    public int getId() {
+        return id;
     }
 }

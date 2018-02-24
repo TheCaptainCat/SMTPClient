@@ -12,9 +12,12 @@ public class RetrCommand extends Command {
 
     private boolean hasRecievedOk;
 
-    public RetrCommand(Client client) {
+    private int id;
+
+    public RetrCommand(Client client, int id) {
         super(client);
         this.hasRecievedOk = false;
+        this.id = id;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class RetrCommand extends Command {
             if (!result.equals(".")) {
                 this.result.add(result);
             } else {
-                Message message = new Message();
+                Message message = new Message(this.id);
                 for (int i = 0; i < this.result.size(); i++) {
                     String line = this.result.get(i);
                     if (line.startsWith("FROM")) {

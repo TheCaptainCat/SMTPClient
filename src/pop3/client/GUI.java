@@ -1,24 +1,18 @@
 package pop3.client;
 
-import com.sun.org.apache.xpath.internal.SourceTree;
-import pop3.client.Commands.ApopCommand;
-import pop3.client.Commands.Command;
-import pop3.client.Commands.ConnectionCommand;
-import pop3.client.Commands.ListCommand;
-
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
 public class GUI extends javax.swing.JFrame implements Observer, ActionListener, MouseListener {
+
+    private final static int NO_MESSAGE_SELECTED = -1;
 
     private JTextField textFieldAddress;
     private JTextField textFieldPort;
@@ -34,6 +28,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
     private DefaultListModel<String> model;
     private JList listMessages;
     private List<Message> messages;
+    private JButton buttonDelete;
+    private int selectedMessageId;
 
     private Client client;
 
@@ -72,16 +68,24 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
 
         JPanel panelMessageAndHeader = new JPanel(new BorderLayout());
-        JPanel panelHeader = new JPanel(new GridLayout(0,1));
+        JPanel panelHeader = new JPanel(new BorderLayout());
+        JPanel panelHeaderCenter = new JPanel(new GridLayout(0,1));
         this.textFieldTo = new JTextField("");
-        panelHeader.add(this.textFieldTo);
+        panelHeaderCenter.add(this.textFieldTo);
         this.textFieldFrom = new JTextField("");
-        panelHeader.add(this.textFieldFrom);
+        panelHeaderCenter.add(this.textFieldFrom);
         this.textFieldCc = new JTextField("");
-        panelHeader.add(this.textFieldCc);
+        panelHeaderCenter.add(this.textFieldCc);
         this.textFieldSubject = new JTextField("");
-        panelHeader.add(this.textFieldSubject);
+        panelHeaderCenter.add(this.textFieldSubject);
         this.textAreaResult = new JTextArea();
+
+        this.buttonDelete = new JButton("Supprimer");
+        this.buttonDelete.addActionListener(this);
+
+        panelHeader.add(panelHeaderCenter, BorderLayout.CENTER);
+        panelHeader.add(this.buttonDelete, BorderLayout.EAST);
+
         panelMessageAndHeader.add(panelHeader, BorderLayout.NORTH);
         panelMessageAndHeader.add(this.textAreaResult, BorderLayout.CENTER);
 
@@ -106,11 +110,13 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setSize(700, 400);
+        setSize(700, 500);
         setVisible(true);
 
         this.buttonOk.addActionListener(this);
         this.buttonGetEmails.addActionListener(this);
+
+        this.selectedMessageId = NO_MESSAGE_SELECTED;
     }
 
     @Override
@@ -147,17 +153,31 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 this.buttonGetEmails.setEnabled(false);
                 this.model = new DefaultListModel<>();
                 this.listMessages.setModel(this.model);
-                this.textFieldSubject.setText("");
-                this.textFieldTo.setText("");
-                this.textFieldFrom.setText("");
-                this.textFieldCc.setText("");
-                this.textAreaResult.setText("");
+                clearFields();
                 this.client = null;
                 break;
             case QUIT_FAILED:
                 this.showErrorDialog("Erreur lors de la déconnexion. Certains messages marqués comme supprimés pourraient ne pas l'être.");
                 break;
+            case DELE_OK:
+                this.selectedMessageId = NO_MESSAGE_SELECTED;
+                this.clearFields();
+                System.out.println("Message supprimé !");
+                this.listMessages();
+                break;
+            case DELE_FAILED:
+                this.showErrorDialog("Erreur lors de la suppression du message.");
+                break;
+
         }
+    }
+
+    private void clearFields() {
+        this.textFieldSubject.setText("");
+        this.textFieldTo.setText("");
+        this.textFieldFrom.setText("");
+        this.textFieldCc.setText("");
+        this.textAreaResult.setText("");
     }
 
     @Override
@@ -179,10 +199,18 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             }
 
         } else if (e.getSource() == this.buttonGetEmails) {
-            this.model = new DefaultListModel<>();
-            this.listMessages.setModel(this.model);
-            this.client.listMessages();
+            this.listMessages();
+        } else if (e.getSource() == this.buttonDelete) {
+            if (this.selectedMessageId != NO_MESSAGE_SELECTED) {
+                this.client.deleteMessage(this.selectedMessageId);
+            }
         }
+    }
+
+    public void listMessages() {
+        this.model = new DefaultListModel<>();
+        this.listMessages.setModel(this.model);
+        this.client.listMessages();
     }
 
     public void showErrorDialog(String message) {
@@ -203,6 +231,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             this.textFieldFrom.setText(message.getFrom());
             this.textFieldCc.setText(message.getCc());
             this.textFieldSubject.setText(message.getSubject());
+            this.selectedMessageId = message.getId();
         }
     }
 

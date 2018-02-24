@@ -10,5 +10,7 @@ public enum NotificationType {
     RETR_FAILED,
     RETR_ALL_MESSAGES_OK,
     QUIT_OK,
-    QUIT_FAILED
+    QUIT_FAILED,
+    DELE_OK,
+    DELE_FAILED
 }

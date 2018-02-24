@@ -40,13 +40,16 @@ public class RetrCommand extends Command {
                     String line = this.result.get(i);
                     if (line.startsWith("FROM")) {
                         message.setFrom(line);
-                        System.out.println("from");
                     } else if (line.startsWith("TO")) {
                         message.setTo(line);
                     } else if (line.startsWith("CC")) {
                         message.setCc(line);
+                    } else if (line.startsWith("SUBJECT")) {
+                        message.setSubject(line);
                     } else {
-                        message.setBody(message.getBody() + '\n' + line);
+                        if (!line.isEmpty()) {
+                            message.setBody(message.getBody() + '\n' + line);
+                        }
                     }
                 }
                 this.client.setRetreivedMessage(message);

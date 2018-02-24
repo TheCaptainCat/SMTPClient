@@ -25,6 +25,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
     private JTextField textFieldFrom;
     private JTextField textFieldTo;
     private JTextField textFieldCc;
+    private JTextField textFieldSubject;
     private JPasswordField textFieldPassword;
     private JButton buttonOk;
     private JButton buttonGetEmails;
@@ -72,6 +73,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         panelHeader.add(this.textFieldFrom);
         this.textFieldCc = new JTextField("");
         panelHeader.add(this.textFieldCc);
+        this.textFieldSubject = new JTextField("");
+        panelHeader.add(this.textFieldSubject);
         this.textAreaResult = new JTextArea();
         panelMessageAndHeader.add(panelHeader, BorderLayout.NORTH);
         panelMessageAndHeader.add(this.textAreaResult, BorderLayout.CENTER);
@@ -126,7 +129,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             case RETR_ALL_MESSAGES_OK:
                 List<Message> messages = (List<Message>) notification.getArguments();
                 for (Message message : messages) {
-                    this.model.addElement(message.getBody());
+                    this.model.addElement(message.getSubjectWithoutPrefix());
                 }
                 this.messages = messages;
                 break;
@@ -174,6 +177,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             this.textFieldTo.setText(message.getTo());
             this.textFieldFrom.setText(message.getFrom());
             this.textFieldCc.setText(message.getCc());
+            this.textFieldSubject.setText(message.getSubject());
         }
     }
 

@@ -4,6 +4,7 @@ public class Message {
     private String to;
     private String from;
     private String cc;
+    private String subject;
     private String body;
 
     public Message() {
@@ -11,6 +12,7 @@ public class Message {
         this.from = "";
         this.cc = "";
         this.body = "";
+        this.subject = "";
     }
 
     public String getTo() {
@@ -43,5 +45,17 @@ public class Message {
 
     public void setCc(String cc) {
         this.cc = cc;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getSubjectWithoutPrefix() {
+        return subject.substring(9);
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 }

@@ -6,5 +6,7 @@ public enum NotificationType {
     APOP_OK,
     APOP_FAILED,
     LIST_OK,
-    LIST_FAILED
+    LIST_FAILED,
+    RETR_FAILED,
+    RETR_ALL_MESSAGES_OK
 }

@@ -24,11 +24,14 @@ public class ListCommand extends Command {
 
             if (m.matches()) {
                 this.numberOfMessages = Integer.parseInt(m.group(1));
+                this.error = false;
+            } else {
+                this.error = true;
             }
         } else {
             this.result.add(result);
             if (this.result.size() == this.numberOfMessages) {
-                System.out.println("termine");
+                this.client.retrieveMessages(this.result);
             }
         }
     }

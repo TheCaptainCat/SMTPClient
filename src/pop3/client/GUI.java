@@ -93,6 +93,12 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
             case APOP_FAILED:
                 this.showErrorDialog("Identifiant ou mot de passe incorrect.");
                 break;
+            case RETR_FAILED:
+                this.showErrorDialog("Impossible de relever le message.");
+                break;
+            case RETR_ALL_MESSAGES_OK:
+                System.out.println("TODO display messages");
+                break;
         }
     }
 

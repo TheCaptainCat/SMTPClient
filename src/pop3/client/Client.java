@@ -5,6 +5,7 @@ import pop3.client.Commands.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -26,6 +27,11 @@ public class Client extends Observable implements Observer {
     private String username;
     private String password;
 
+    private boolean isRetrievingMessages;
+    private List<String> messageIdsToRetrieve;
+    private int messageIndexToRetrieve;
+    private List<String> retrieveMessagesResult;
+
     private Command lastCommand;
 
     public Client(String address, int port) {
@@ -34,6 +40,8 @@ public class Client extends Observable implements Observer {
         this.connected = false;
         this.loggedIn = false;
         this.lastCommand = null;
+        this.isRetrievingMessages = false;
+        this.messageIndexToRetrieve = 0;
     }
 
     public void connect(String username, String password) {
@@ -94,14 +102,46 @@ public class Client extends Observable implements Observer {
         this.sender.sendPacket(new Packet("LIST"));
     }
 
-    public synchronized void retreiveMessages(List<String> ids) {
-
+    public synchronized void retrieveMessages(List<String> ids) {
+        if (ids.size() > 0) {
+            this.isRetrievingMessages = true;
+            this.retrieveMessagesResult = new LinkedList<>();
+            this.messageIdsToRetrieve = ids;
+            this.retrieveMessage(ids.get(0));
+            this.messageIndexToRetrieve = 1;
+        }
     }
 
-    public synchronized void retreiveMessage(String id) {
+    public synchronized void retrieveMessage(String id) {
         this.lastCommand = new RetrCommand(this);
         this.sender.sendPacket(new Packet(String.format("RETR %s", id)));
     }
+
+    public synchronized void setRetreivedMessage(String message) {
+        if (this.isRetrievingMessages) {
+            this.retrieveMessagesResult.add(message);
+            this.retrieveNextMessage();
+        }
+    }
+
+    public synchronized void retrieveNextMessage() {
+        if (this.isRetrievingMessages) {
+            if (this.messageIndexToRetrieve < this.messageIdsToRetrieve.size()) {
+                this.retrieveMessage(this.messageIdsToRetrieve.get(this.messageIndexToRetrieve));
+                this.messageIndexToRetrieve++;
+
+            } else {
+                this.isRetrievingMessages = false;
+                setChanged();
+                notifyGUI(new Notification(
+                        NotificationType.RETR_ALL_MESSAGES_OK,
+                        this.retrieveMessagesResult)
+                );
+            }
+        }
+    }
+
+
 
     public void notifyGUI(Notification notification) {
         setChanged();
@@ -110,7 +150,7 @@ public class Client extends Observable implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println(arg);
+        System.out.println("Received : " + arg);
         this.lastCommand.handleResult((String) arg);
     }
 }

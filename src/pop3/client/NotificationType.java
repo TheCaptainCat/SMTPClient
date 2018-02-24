@@ -8,5 +8,7 @@ public enum NotificationType {
     LIST_OK,
     LIST_FAILED,
     RETR_FAILED,
-    RETR_ALL_MESSAGES_OK
+    RETR_ALL_MESSAGES_OK,
+    QUIT_OK,
+    QUIT_FAILED
 }

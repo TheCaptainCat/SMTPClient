@@ -141,6 +141,11 @@ public class Client extends Observable implements Observer {
         }
     }
 
+    public void logout() {
+        this.lastCommand = new QuitCommand(this);
+        this.sender.sendPacket(new Packet("QUIT"));
+    }
+
 
 
     public void notifyGUI(Notification notification) {

@@ -125,6 +125,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 break;
             case APOP_OK:
                 System.out.println("Identification réussie");
+                this.buttonOk.setText("Déconnexion");
                 this.buttonGetEmails.setEnabled(true);
                 break;
             case APOP_FAILED:
@@ -139,6 +140,22 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                     this.model.addElement(message.getSubjectWithoutPrefix());
                 }
                 this.messages = messages;
+                break;
+            case QUIT_OK:
+                System.out.println("Déconnexion réussie !");
+                this.buttonOk.setText("Connexion");
+                this.buttonGetEmails.setEnabled(false);
+                this.model = new DefaultListModel<>();
+                this.listMessages.setModel(this.model);
+                this.textFieldSubject.setText("");
+                this.textFieldTo.setText("");
+                this.textFieldFrom.setText("");
+                this.textFieldCc.setText("");
+                this.textAreaResult.setText("");
+                this.client = null;
+                break;
+            case QUIT_FAILED:
+                this.showErrorDialog("Erreur lors de la déconnexion. Certains messages marqués comme supprimés pourraient ne pas l'être.");
                 break;
         }
     }
@@ -157,9 +174,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 if (!this.client.isLoggedIn()) {
                     this.client.performApop(this.textFieldUsername.getText(), new String(this.textFieldPassword.getPassword()));
                 } else {
-                    System.out.println("Déjà connecté");
+                    this.client.logout();
                 }
-
             }
 
         } else if (e.getSource() == this.buttonGetEmails) {

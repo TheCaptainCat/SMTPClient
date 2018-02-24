@@ -7,6 +7,7 @@ import pop3.client.Commands.ConnectionCommand;
 import pop3.client.Commands.ListCommand;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,6 +32,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
     private JButton buttonGetEmails;
     private JTextArea textAreaResult;
     private DefaultListModel<String> model;
+    private JList listMessages;
     private List<Message> messages;
 
     private Client client;
@@ -40,7 +42,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         JPanel panel = new JPanel();
         panel.add(splitPane);
 
-        JPanel panelSplitTop = new JPanel(new GridLayout(0,2));
+        JPanel panelSplitTop = new JPanel(new BorderLayout());
+
+        JPanel panelTopFields = new JPanel(new GridLayout(0,2));
         JLabel labelAddress = new JLabel("Adresse :");
         this.textFieldAddress = new JTextField("127.0.0.1");
         JLabel labelPort = new JLabel("Port :");
@@ -50,18 +54,20 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         JLabel labelPassword = new JLabel("Mot de passe :");
         this.textFieldPassword = new JPasswordField("test");
 
-        panelSplitTop.add(labelAddress);
-        panelSplitTop.add(this.textFieldAddress);
-        panelSplitTop.add(labelPort);
-        panelSplitTop.add(this.textFieldPort);
-        panelSplitTop.add(labelUsername);
-        panelSplitTop.add(this.textFieldUsername);
-        panelSplitTop.add(labelPassword);
-        panelSplitTop.add(this.textFieldPassword);
-        splitPane.setTopComponent(panelSplitTop);
+        panelTopFields.add(labelAddress);
+        panelTopFields.add(this.textFieldAddress);
+        panelTopFields.add(labelPort);
+        panelTopFields.add(this.textFieldPort);
+        panelTopFields.add(labelUsername);
+        panelTopFields.add(this.textFieldUsername);
+        panelTopFields.add(labelPassword);
+        panelTopFields.add(this.textFieldPassword);
 
         this.buttonOk = new JButton("Connexion");
-        panelSplitTop.add(this.buttonOk);
+
+        panelSplitTop.add(panelTopFields, BorderLayout.CENTER);
+        panelSplitTop.add(this.buttonOk, BorderLayout.SOUTH);
+        splitPane.setTopComponent(panelSplitTop);
 
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
 
@@ -82,7 +88,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
         this.buttonGetEmails = new JButton("Relever les messages");
         this.buttonGetEmails.setEnabled(false);
         this.model = new DefaultListModel<>();
-        JList listMessages = new JList(model);
+        this.listMessages = new JList(model);
         listMessages.setVisibleRowCount(5);
         JScrollPane scrollPane_1 = new JScrollPane(listMessages);
         Dimension d = listMessages.getPreferredSize();
@@ -119,6 +125,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
                 break;
             case APOP_OK:
                 System.out.println("Identification réussie");
+                this.buttonGetEmails.setEnabled(true);
                 break;
             case APOP_FAILED:
                 this.showErrorDialog("Identifiant ou mot de passe incorrect.");
@@ -156,6 +163,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
             }
 
         } else if (e.getSource() == this.buttonGetEmails) {
+            this.model = new DefaultListModel<>();
+            this.listMessages.setModel(this.model);
             this.client.listMessages();
         }
     }

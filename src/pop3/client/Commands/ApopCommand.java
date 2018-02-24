@@ -20,9 +20,5 @@ public class ApopCommand extends Command {
                         null
                 )
         );
-
-        if (!this.error) {
-            this.client.listMessages();
-        }
     }
 }

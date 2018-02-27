@@ -1,5 +1,7 @@
 package pop3.client;
 
+import javax.net.ssl.SSLHandshakeException;
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,7 +35,12 @@ public class Receiver extends Observable implements Runnable {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            if (e instanceof SSLHandshakeException) {
+                JOptionPane.showMessageDialog(null, "Pas de cipher suites en commun.", "Erreur", JOptionPane.ERROR_MESSAGE);
+                System.exit(0);
+            } else {
+                e.printStackTrace();
+            }
         }
     }
 }

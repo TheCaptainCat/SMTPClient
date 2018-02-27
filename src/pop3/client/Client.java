@@ -2,13 +2,12 @@ package pop3.client;
 
 import pop3.client.Commands.*;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 /**
  * Une connexion permet de faire une requête vers le serveur et attend la réponse.
@@ -49,11 +48,14 @@ public class Client extends Observable implements Observer {
         this.password = password;
         this.lastCommand = new ConnectionCommand(this);
 
-        Socket socket = null;
+        SSLSocket socket = null;
         try {
-            InetAddress server = InetAddress.getByName(address);
-            socket = new Socket(server, port);
+            SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+            socket = (SSLSocket) factory.createSocket(this.address, this.port);
+            String[] suites = socket.getSupportedCipherSuites();
+            socket.setEnabledCipherSuites(this.getAnonOnly(suites));
         } catch (IOException e) {
+            System.err.println(e.getMessage());
             this.setConnected(false);
             ((ConnectionCommand)this.lastCommand).connectionFailed();
         }
@@ -65,6 +67,19 @@ public class Client extends Observable implements Observer {
 
         new Thread(this.receiver).start();
         new Thread(this.sender).start();
+    }
+
+    private String[] getAnonOnly(String[] suites) {
+        ArrayList<String> resultList = new ArrayList<>();
+        for (String s : suites) {
+            if (s.contains("anon")) {
+                resultList.add(s);
+            }
+        }
+
+        String[] resultArray = new String[resultList.size()];
+
+        return resultList.toArray(resultArray);
     }
 
     public void setConnected(boolean value) {

@@ -40,7 +40,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener,
 
         JPanel panelTopFields = new JPanel(new GridLayout(0,2));
         JLabel labelAddress = new JLabel("Adresse :");
-        this.textFieldAddress = new JTextField("127.0.0.1");
+        this.textFieldAddress = new JTextField("134.214.117.134");
         JLabel labelPort = new JLabel("Port :");
         this.textFieldPort = new JTextField("1337");
         JLabel labelUsername = new JLabel("Nom d'utilisateur :");

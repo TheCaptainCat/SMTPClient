@@ -39,8 +39,10 @@ public class Receiver extends Observable implements Runnable {
                 JOptionPane.showMessageDialog(null, "Pas de cipher suites en commun.", "Erreur", JOptionPane.ERROR_MESSAGE);
                 System.exit(0);
             } else {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
+        } finally {
+            Thread.currentThread().interrupt();
         }
     }
 }

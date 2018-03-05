@@ -34,15 +34,28 @@ public class Sender extends Observable implements Runnable {
             while (this.run) {
                 while (packets.size() > 0) {
                     try {
-                        packets.poll().send(socket);
+                        Packet p = packets.poll();
+                        p.send(socket);
+                        if (p.getData().equals("QUIT")) {
+                            this.run = false;
+                        }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
-                wait();
+                if (this.run) {
+                    wait();
+                }
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+        } finally {
+            try {
+                socket.close();
+                Thread.currentThread().interrupt();
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
         }
     }
 }

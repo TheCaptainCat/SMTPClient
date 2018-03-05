@@ -19,4 +19,8 @@ public class Packet {
         out.write(data);
         out.flush();
     }
+
+    public String getData() {
+        return new String(data);
+    }
 }

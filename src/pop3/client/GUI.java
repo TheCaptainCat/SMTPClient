@@ -1,5 +1,7 @@
 package pop3.client;
 
+import pop3.client.states.ConnectionState;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -190,6 +192,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
         } else if (e.getSource() == this.buttonSendEmail) {
             // TODO
+            this.client.setState(new ConnectionState(this.client));
         } else if (e.getSource() == this.buttonCancel) {
             this.clearFields();
         }

@@ -14,6 +14,7 @@ import java.util.*;
 public class Client extends Observable implements Observer {
 
     private State state;
+    private Message message;
 
     private Receiver receiver;
     private Sender sender;
@@ -33,8 +34,10 @@ public class Client extends Observable implements Observer {
         try {
             InetAddress server = InetAddress.getByName(address);
             socket = new Socket(server, port);
-        } catch (IOException e) {
-            e.printStackTrace();
+            notifyGUI(new Notification(NotificationType.CONNECTION_OK, null));
+        } catch (Exception e) {
+            notifyGUI(new Notification(NotificationType.CONNECTION_FAILED, null));
+            return;
         }
 
         this.receiver = new Receiver(socket);
@@ -48,6 +51,14 @@ public class Client extends Observable implements Observer {
 
     public void setState(State state) {
         this.state = state;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 
     public void sendPacket(Packet packet) {

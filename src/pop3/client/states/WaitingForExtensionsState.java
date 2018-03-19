@@ -19,7 +19,6 @@ public class WaitingForExtensionsState extends State {
         // TODO supportedExtensions
         this.supportedExtensions.add(result);
         this.client.setState(new ExtensionsReceivedState(this.client));
-        // TODO
-        this.client.sendPacket(new Packet(String.format("MAIL FROM:<%s>", "test@test.fr")));
+        this.client.sendPacket(new Packet(String.format("MAIL FROM:<%s>", this.client.getMessage().getFrom())));
     }
 }

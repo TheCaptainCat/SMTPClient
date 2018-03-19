@@ -1,28 +1,27 @@
 package pop3.client;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class Message {
-    private int id;
-    private String to;
+    private List<String> to;
     private String from;
-    private String cc;
     private String subject;
     private String body;
 
-    public Message(int id) {
-        this.to = "";
+    public Message() {
+        this.to = new LinkedList<>();
         this.from = "";
-        this.cc = "";
         this.body = "";
         this.subject = "";
-        this.id = id;
     }
 
-    public String getTo() {
+    public List<String> getTo() {
         return to;
     }
 
-    public void setTo(String to) {
-        this.to = to;
+    public void addRecipient(String to) {
+        this.to.add(to);
     }
 
     public String getFrom() {
@@ -41,14 +40,6 @@ public class Message {
         this.body = body;
     }
 
-    public String getCc() {
-        return cc;
-    }
-
-    public void setCc(String cc) {
-        this.cc = cc;
-    }
-
     public String getSubject() {
         return subject;
     }
@@ -59,9 +50,5 @@ public class Message {
 
     public void setSubject(String subject) {
         this.subject = subject;
-    }
-
-    public int getId() {
-        return id;
     }
 }

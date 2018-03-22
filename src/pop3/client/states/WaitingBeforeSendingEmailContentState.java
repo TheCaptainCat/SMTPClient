@@ -15,6 +15,6 @@ public class WaitingBeforeSendingEmailContentState extends State {
     public void handleResult(String result) {
         this.client.setState(new EmailContentSentState(this.client));
         // TODO
-        this.client.sendPacket(new Packet(""));
+        this.client.sendPacket(new Packet(this.client.getMessage().getBody() + "\n.\n"));
     }
 }

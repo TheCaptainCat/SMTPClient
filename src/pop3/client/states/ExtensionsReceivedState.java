@@ -12,8 +12,7 @@ public class ExtensionsReceivedState extends State {
     public void handleResult(String result) {
         if (result.startsWith("250")) {
             this.client.setState(new TryingToReachTheFirstRecipientState(this.client));
-            // TODO
-            this.client.sendPacket(new Packet(String.format("RCPT TO:<%s>", "test")));
+            this.client.sendPacket(new Packet(String.format("RCPT TO:<%s>", this.client.getMessage().popRecipient())));
         }
     }
 }

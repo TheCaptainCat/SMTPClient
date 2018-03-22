@@ -12,7 +12,9 @@ public class ConnectionState extends State {
     public void handleResult(String result) {
         if (result.startsWith("220")) {
             this.client.setState(new WaitingForExtensionsState(this.client));
-            this.client.sendPacket(new Packet("ELHO"));
+            this.client.sendPacket(new Packet("EHLO " + this.client.getDomain()));
+        } else {
+            System.out.println("PLS");
         }
     }
 }

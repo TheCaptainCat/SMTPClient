@@ -15,6 +15,7 @@ public class Client extends Observable implements Observer {
 
     private State state;
     private Message message;
+    private String domain;
 
     private Receiver receiver;
     private Sender sender;
@@ -22,10 +23,11 @@ public class Client extends Observable implements Observer {
     private String address;
     private int port;
 
-    public Client(String address, int port) {
+    public Client(String address, int port, String domain) {
         this.address = address;
         this.port = port;
         this.state = new WritingState(this);
+        this.domain = domain;
     }
 
     public void connect() {
@@ -34,7 +36,6 @@ public class Client extends Observable implements Observer {
         try {
             InetAddress server = InetAddress.getByName(address);
             socket = new Socket(server, port);
-            notifyGUI(new Notification(NotificationType.CONNECTION_OK, null));
         } catch (Exception e) {
             notifyGUI(new Notification(NotificationType.CONNECTION_FAILED, null));
             return;
@@ -47,6 +48,10 @@ public class Client extends Observable implements Observer {
 
         new Thread(this.receiver).start();
         new Thread(this.sender).start();
+    }
+
+    public String getDomain() {
+        return domain;
     }
 
     public void setState(State state) {
@@ -78,5 +83,6 @@ public class Client extends Observable implements Observer {
     @Override
     public void update(Observable o, Object arg) {
         System.out.println("Received : " + arg);
+        this.state.handleResult(arg.toString());
     }
 }

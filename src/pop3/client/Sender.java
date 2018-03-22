@@ -35,6 +35,7 @@ public class Sender extends Observable implements Runnable {
                 while (packets.size() > 0) {
                     try {
                         Packet p = packets.poll();
+                        System.out.print("Sent : " + p.getData());
                         p.send(socket);
                         if (p.getData().equals("QUIT")) {
                             this.run = false;

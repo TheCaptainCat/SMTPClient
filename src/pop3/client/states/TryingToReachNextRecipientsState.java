@@ -10,10 +10,12 @@ public class TryingToReachNextRecipientsState extends State {
 
     @Override
     public void handleResult(String result) {
-        // TODO empty list
-        // If empty list then
-        this.client.setState(new WaitingBeforeSendingEmailContentState(this.client));
-        this.client.sendPacket(new Packet("DATA"));
-        // End if
+        String recipient = this.client.getMessage().popRecipient();
+        if (recipient != null) {
+            this.client.sendPacket(new Packet(String.format("RCPT TO:<%s>", recipient)));
+        } else {
+            this.client.setState(new WaitingBeforeSendingEmailContentState(this.client));
+            this.client.sendPacket(new Packet("DATA"));
+        }
     }
 }

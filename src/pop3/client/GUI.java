@@ -5,9 +5,10 @@ import pop3.client.states.ConnectionState;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GUI extends javax.swing.JFrame implements Observer, ActionListener {
 
@@ -17,12 +18,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     private JTextField textFieldFrom;
     private JTextField textFieldTo;
     private JTextField textFieldSubject;
-    private JButton buttonLogin;
     private JButton buttonSendEmail;
     private JTextArea textAreaContent;
     private JButton buttonCancel;
-
-    private Client client;
 
     public GUI() {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -33,7 +31,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
         JPanel panelTopFields = new JPanel(new GridLayout(0,2));
         JLabel labelAddress = new JLabel("Adresse :");
-        this.textFieldAddress = new JTextField("134.214.117.134");
+        this.textFieldAddress = new JTextField("127.0.0.1");
         JLabel labelPort = new JLabel("Port :");
         this.textFieldPort = new JTextField("1337");
         JLabel labelUsername = new JLabel("Nom d'utilisateur :");
@@ -46,24 +44,21 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         panelTopFields.add(labelUsername);
         panelTopFields.add(this.textFieldUsername);
 
-        this.buttonLogin = new JButton("Connexion");
-
         panelSplitTop.add(panelTopFields, BorderLayout.CENTER);
-        panelSplitTop.add(this.buttonLogin, BorderLayout.SOUTH);
-        splitPane.setTopComponent(panelSplitTop);
+        //splitPane.setTopComponent(panelSplitTop);
 
         JPanel panelSplitBottom = new JPanel(new BorderLayout());
 
         JPanel panelMessageAndHeader = new JPanel(new BorderLayout());
         JPanel panelHeader = new JPanel(new BorderLayout());
         JPanel panelHeaderCenter = new JPanel(new GridLayout(0,1));
-        this.textFieldFrom = new JTextField("");
+        this.textFieldFrom = new JTextField("pierre@gmail.com");
         panelHeaderCenter.add(this.textFieldFrom);
-        this.textFieldTo = new JTextField("");
+        this.textFieldTo = new JTextField("Bob@polyp.com, Jacques@polyp.com");
         panelHeaderCenter.add(this.textFieldTo);
-        this.textFieldSubject = new JTextField("");
+        this.textFieldSubject = new JTextField("Information importante");
         panelHeaderCenter.add(this.textFieldSubject);
-        this.textAreaContent = new JTextArea();
+        this.textAreaContent = new JTextArea("Bonjour !\n\nLa réunion aura lieu ce mercredi à 16h30. Merci de confirmer votre présence.\n\nCordialement, Pierre.");
 
         JPanel panelHeaderLeft = new JPanel(new GridLayout(0,1));
         panelHeaderLeft.add(new JLabel("From : "));
@@ -81,7 +76,6 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         panelMessageAndHeader.add(this.textAreaContent, BorderLayout.CENTER);
 
         this.buttonSendEmail = new JButton("Envoyer");
-        this.buttonSendEmail.setEnabled(false);
 
         panelSplitBottom.add(panelMessageAndHeader, BorderLayout.CENTER);
         panelSplitBottom.add(this.buttonSendEmail, BorderLayout.SOUTH);
@@ -95,7 +89,6 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         setSize(700, 500);
         setVisible(true);
 
-        this.buttonLogin.addActionListener(this);
         this.buttonSendEmail.addActionListener(this);
     }
 
@@ -103,10 +96,6 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     public void update(Observable o, Object arg) {
         Notification notification = (Notification) arg;
         switch (notification.getType()) {
-            case CONNECTION_OK:
-                buttonLogin.setEnabled(false);
-                buttonSendEmail.setEnabled(true);
-                break;
             case CONNECTION_FAILED:
                 showErrorDialog("Impossible de se connecter au serveur.");
                 break;
@@ -122,23 +111,36 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == this.buttonLogin) {
-            // TODO
-            this.client = new Client(this.textFieldAddress.getText(), Integer.parseInt(this.textFieldPort.getText()));
-            this.client.addObserver(this);
-            this.client.connect();
-        } else if (e.getSource() == this.buttonSendEmail) {
-            // TODO
+        if (e.getSource() == this.buttonSendEmail) {
             Message message = new Message();
             message.setFrom(this.textFieldFrom.getText());
             message.setSubject(this.textFieldSubject.getText());
             message.setBody(this.textAreaContent.getText());
-            message.addRecipient("test@test.fr");
-            message.addRecipient("jacky@gamil.com");
-            this.client.setState(new ConnectionState(this.client));
+            for (String s : getRecipients(this.textFieldTo.getText())) {
+                if (!s.isEmpty()) {
+                    message.addRecipient(s);
+                }
+            }
+
+            if (!message.hasSomeRecipients()) {
+                System.err.println("Veuillez spécifier le ou les destinataires du message.");
+                return;
+            }
+
+            Client client = new Client("127.0.0.1", 1337, "gmail.com");
+            client.addObserver(this);
+            client.setMessage(message);
+
+            client.setState(new ConnectionState(client));
+            client.connect();
+
         } else if (e.getSource() == this.buttonCancel) {
             this.clearFields();
         }
+    }
+
+    public List<String> getRecipients(String fromLine) {
+        return Arrays.asList(fromLine.replace(" ", "").split(","));
     }
 
     public void showErrorDialog(String message) {

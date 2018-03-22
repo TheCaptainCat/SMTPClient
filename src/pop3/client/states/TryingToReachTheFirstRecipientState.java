@@ -11,8 +11,14 @@ public class TryingToReachTheFirstRecipientState extends State {
     @Override
     public void handleResult(String result) {
         if (result.startsWith("250")) {
-            // TODO
-            this.client.setState(new TryingToReachNextRecipientsState(this.client));
+            String recipient = this.client.getMessage().popRecipient();
+            if (recipient != null) {
+                this.client.setState(new TryingToReachNextRecipientsState(this.client));
+                this.client.sendPacket(new Packet(String.format("RCPT TO:<%s>", recipient)));
+            } else {
+                this.client.setState(new WaitingBeforeSendingEmailContentState(this.client));
+                this.client.sendPacket(new Packet("DATA"));
+            }
         } else {
             // TODO
         }

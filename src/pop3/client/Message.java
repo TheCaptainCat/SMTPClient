@@ -1,27 +1,33 @@
 package pop3.client;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Stack;
 
 public class Message {
-    private List<String> to;
+    private Stack<String> to;
     private String from;
     private String subject;
     private String body;
 
     public Message() {
-        this.to = new LinkedList<>();
+        this.to = new Stack<>();
         this.from = "";
         this.body = "";
         this.subject = "";
     }
 
-    public List<String> getTo() {
-        return to;
+    public String popRecipient() {
+        if (!this.to.empty()) {
+            return to.pop();
+        }
+        return null;
+    }
+
+    public boolean hasSomeRecipients() {
+        return !to.empty();
     }
 
     public void addRecipient(String to) {
-        this.to.add(to);
+        this.to.push(to);
     }
 
     public String getFrom() {

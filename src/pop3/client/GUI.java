@@ -8,8 +8,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class GUI extends javax.swing.JFrame implements Observer, ActionListener {
 
@@ -24,6 +23,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     private JButton buttonCancel;
 
     private Stack<Client> clients;
+    private List<String> unreachableRecipients;
 
     public GUI() {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -102,8 +102,17 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
             case CONNECTION_FAILED:
                 showErrorDialog("Impossible de se connecter au serveur.");
                 break;
+            case UNREACHBLE_RECIPIENT:
+                this.unreachableRecipients.add(notification.getArguments().toString());
+                break;
             case ENDED:
-                this.connectNextClient();
+                if (!this.connectToNextClient()) {
+                    if (this.unreachableRecipients.isEmpty()) {
+                        this.showSuccessDialog("Le message a bien été délivré à tous les destinataires.");
+                    } else {
+                        this.showErrorDialog("Le message n'a pas pu être délivré à : " + this.unreachableRecipients.stream().collect(Collectors.joining(", ")));
+                    }
+                }
                 break;
         }
     }
@@ -119,6 +128,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.buttonSendEmail) {
 
+            this.unreachableRecipients = new LinkedList<>();
             Message message = getMessageFromFields();
 
             this.clients = new Stack<>();
@@ -141,20 +151,24 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                     client.setMessage(message);
                     client.setState(new ConnectionState(client));
                     this.clients.add(client);
+                } else {
+                    this.unreachableRecipients.addAll(message.getAllRecipientsOfADomain(s));
                 }
             }
 
-            this.connectNextClient();
+            this.connectToNextClient();
 
         } else if (e.getSource() == this.buttonCancel) {
             this.clearFields();
         }
     }
 
-    private void connectNextClient() {
+    private boolean connectToNextClient() {
         if (!this.clients.empty()) {
             this.clients.pop().connect();
+            return true;
         }
+        return false;
     }
 
     private Message getMessageFromFields() {
@@ -169,8 +183,11 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         return Arrays.asList(fromLine.replace(" ", "").split(","));
     }
 
+    public void showSuccessDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public void showErrorDialog(String message) {
         JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE);
     }
-
 }

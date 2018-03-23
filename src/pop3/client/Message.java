@@ -48,6 +48,16 @@ public class Message {
         return domains;
     }
 
+    public List<String> getAllRecipientsOfADomain(String domain) {
+        List<String> recipients = new LinkedList<>();
+        for (String s : this.to) {
+            if (domain.equals(getDomain(s))) {
+                recipients.add(s);
+            }
+        }
+        return recipients;
+    }
+
     public boolean hasSomeRecipients() {
         return !to.isEmpty();
     }

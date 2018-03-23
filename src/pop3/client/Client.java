@@ -16,6 +16,7 @@ public class Client extends Observable implements Observer {
     private State state;
     private Message message;
     private String domain;
+    private String lastRecipientTried;
 
     private Receiver receiver;
     private Sender sender;
@@ -28,6 +29,7 @@ public class Client extends Observable implements Observer {
         this.port = port;
         this.state = new WritingState(this);
         this.domain = domain;
+        this.lastRecipientTried = null;
     }
 
     public void connect() {
@@ -52,6 +54,14 @@ public class Client extends Observable implements Observer {
 
     public String getDomain() {
         return domain;
+    }
+
+    public String getLastRecipientTried() {
+        return lastRecipientTried;
+    }
+
+    public void setLastRecipientTried(String lastRecipientTried) {
+        this.lastRecipientTried = lastRecipientTried;
     }
 
     public void setState(State state) {

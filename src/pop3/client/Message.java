@@ -1,33 +1,59 @@
 package pop3.client;
 
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Message {
-    private Stack<String> to;
+    private List<String> to;
     private String from;
     private String subject;
     private String body;
 
     public Message() {
-        this.to = new Stack<>();
+        this.to = new LinkedList<>();
         this.from = "";
         this.body = "";
         this.subject = "";
     }
 
-    public String popRecipient() {
-        if (!this.to.empty()) {
-            return to.pop();
+    public String popRecipient(String domain) {
+        String nextRecipient = null;
+        if (this.hasSomeRecipients()) {
+            for (String s : this.to) {
+                if (domain.equals(getDomain(s))) {
+                    nextRecipient = s;
+                }
+            }
+        }
+        this.to.remove(nextRecipient);
+        return nextRecipient;
+    }
+
+    private String getDomain(String address) {
+        String[] splitString = address.split("@");
+        if (splitString.length > 1) {
+            return splitString[1];
         }
         return null;
     }
 
+    public List<String> getAllDomains() {
+        List<String> domains = new LinkedList<>();
+        for (String s : this.to) {
+            String domain = getDomain(s);
+            if (domain != null && !domains.contains(domain)) {
+                domains.add(domain);
+            }
+        }
+        return domains;
+    }
+
     public boolean hasSomeRecipients() {
-        return !to.empty();
+        return !to.isEmpty();
     }
 
     public void addRecipient(String to) {
-        this.to.push(to);
+        this.to.add(to);
     }
 
     public String getFrom() {

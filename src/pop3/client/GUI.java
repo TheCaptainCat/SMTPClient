@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +22,8 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     private JButton buttonSendEmail;
     private JTextArea textAreaContent;
     private JButton buttonCancel;
+
+    private Stack<Client> clients;
 
     public GUI() {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -54,7 +57,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         JPanel panelHeaderCenter = new JPanel(new GridLayout(0,1));
         this.textFieldFrom = new JTextField("pierre@gmail.com");
         panelHeaderCenter.add(this.textFieldFrom);
-        this.textFieldTo = new JTextField("Bob@polyp.com, Jacques@polyp.com");
+        this.textFieldTo = new JTextField("Bob@polyp.com, Jacques@polyp.com, Martin@cheese.com");
         panelHeaderCenter.add(this.textFieldTo);
         this.textFieldSubject = new JTextField("Information importante");
         panelHeaderCenter.add(this.textFieldSubject);
@@ -99,6 +102,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
             case CONNECTION_FAILED:
                 showErrorDialog("Impossible de se connecter au serveur.");
                 break;
+            case ENDED:
+                this.connectNextClient();
+                break;
         }
     }
 
@@ -112,10 +118,10 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == this.buttonSendEmail) {
-            Message message = new Message();
-            message.setFrom(this.textFieldFrom.getText());
-            message.setSubject(this.textFieldSubject.getText());
-            message.setBody(this.textAreaContent.getText());
+
+            Message message = getMessageFromFields();
+
+            this.clients = new Stack<>();
             for (String s : getRecipients(this.textFieldTo.getText())) {
                 if (!s.isEmpty()) {
                     message.addRecipient(s);
@@ -127,16 +133,36 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                 return;
             }
 
-            Client client = new Client("127.0.0.1", 1337, "gmail.com");
-            client.addObserver(this);
-            client.setMessage(message);
+            for (String s : message.getAllDomains()) {
+                int port = PortFactory.getPort(s);
+                if (port != -1) {
+                    Client client = new Client("127.0.0.1", port, s);
+                    client.addObserver(this);
+                    client.setMessage(message);
+                    client.setState(new ConnectionState(client));
+                    this.clients.add(client);
+                }
+            }
 
-            client.setState(new ConnectionState(client));
-            client.connect();
+            this.connectNextClient();
 
         } else if (e.getSource() == this.buttonCancel) {
             this.clearFields();
         }
+    }
+
+    private void connectNextClient() {
+        if (!this.clients.empty()) {
+            this.clients.pop().connect();
+        }
+    }
+
+    private Message getMessageFromFields() {
+        Message message = new Message();
+        message.setFrom(this.textFieldFrom.getText());
+        message.setSubject(this.textFieldSubject.getText());
+        message.setBody(this.textAreaContent.getText());
+        return message;
     }
 
     public List<String> getRecipients(String fromLine) {

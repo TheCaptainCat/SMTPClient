@@ -10,7 +10,7 @@ public class TryingToReachNextRecipientsState extends State {
 
     @Override
     public void handleResult(String result) {
-        String recipient = this.client.getMessage().popRecipient();
+        String recipient = this.client.getMessage().popRecipient(this.client.getDomain());
         if (recipient != null) {
             this.client.sendPacket(new Packet(String.format("RCPT TO:<%s>", recipient)));
         } else {

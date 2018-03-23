@@ -29,6 +29,10 @@ public class Message {
         return nextRecipient;
     }
 
+    public int getNumberOfRecipients() {
+        return this.to.size();
+    }
+
     private String getDomain(String address) {
         String[] splitString = address.split("@");
         if (splitString.length > 1) {
@@ -68,6 +72,10 @@ public class Message {
 
     public String getFrom() {
         return from;
+    }
+
+    public String getFromDomain() {
+        return this.getDomain(this.from);
     }
 
     public void setFrom(String from) {

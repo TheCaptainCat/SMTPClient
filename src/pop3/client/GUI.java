@@ -57,7 +57,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         JPanel panelHeaderCenter = new JPanel(new GridLayout(0,1));
         this.textFieldFrom = new JTextField("pierre@gmail.com");
         panelHeaderCenter.add(this.textFieldFrom);
-        this.textFieldTo = new JTextField("Bob@polyp.com, Jacques@polyp.com, Martin@cheese.com");
+        this.textFieldTo = new JTextField("Bob@polyp.com, Jacques@polyp.com, Yannis@polyp.com, Martin@cheese.com, A@A.A");
         panelHeaderCenter.add(this.textFieldTo);
         this.textFieldSubject = new JTextField("Information importante");
         panelHeaderCenter.add(this.textFieldSubject);
@@ -89,7 +89,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         //setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setSize(700, 500);
+        setSize(700, 400);
         setVisible(true);
 
         this.buttonSendEmail.addActionListener(this);
@@ -100,7 +100,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         Notification notification = (Notification) arg;
         switch (notification.getType()) {
             case CONNECTION_FAILED:
-                showErrorDialog("Impossible de se connecter au serveur.");
+                showWarningDialog("Impossible de se connecter au serveur.");
                 break;
             case UNREACHBLE_RECIPIENT:
                 this.unreachableRecipients.add(notification.getArguments().toString());
@@ -110,11 +110,15 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                     if (this.unreachableRecipients.isEmpty()) {
                         this.showSuccessDialog("Le message a bien été délivré à tous les destinataires.");
                     } else {
-                        this.showErrorDialog("Le message n'a pas pu être délivré à : " + this.unreachableRecipients.stream().collect(Collectors.joining(", ")));
+                        displayUnreachableRecipients();
                     }
                 }
                 break;
         }
+    }
+
+    private void displayUnreachableRecipients() {
+        this.showWarningDialog("Le message n'a pas pu être délivré à : " + this.unreachableRecipients.stream().collect(Collectors.joining(", ")));
     }
 
     private void clearFields() {
@@ -156,6 +160,11 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                 }
             }
 
+            if (this.unreachableRecipients.size() == message.getNumberOfRecipients()) {
+                this.displayUnreachableRecipients();
+                return;
+            }
+
             this.connectToNextClient();
 
         } else if (e.getSource() == this.buttonCancel) {
@@ -187,7 +196,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
         JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public void showErrorDialog(String message) {
-        JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE);
+    public void showWarningDialog(String message) {
+        JOptionPane.showMessageDialog(this, message, "Avertissement", JOptionPane.WARNING_MESSAGE);
     }
 }

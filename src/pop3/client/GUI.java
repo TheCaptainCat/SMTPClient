@@ -149,8 +149,9 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
 
             for (String s : message.getAllDomains()) {
                 int port = PortFactory.getPort(s);
-                if (port != -1) {
-                    Client client = new Client("127.0.0.1", port, s);
+                String address = AddressFactory.getAddress(s);
+                if (!address.isEmpty() && port != -1) {
+                    Client client = new Client(address, port, s);
                     client.addObserver(this);
                     client.setMessage(message);
                     client.setState(new ConnectionState(client));
@@ -165,6 +166,7 @@ public class GUI extends javax.swing.JFrame implements Observer, ActionListener 
                 return;
             }
 
+            message.generateBody();
             this.connectToNextClient();
 
         } else if (e.getSource() == this.buttonCancel) {

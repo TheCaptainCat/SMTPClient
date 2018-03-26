@@ -1,7 +1,9 @@
 package pop3.client;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Message {
     private List<String> to;
@@ -82,8 +84,23 @@ public class Message {
         this.from = from;
     }
 
+    public void generateBody() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FROM: <");
+        sb.append(this.from);
+        sb.append(">\nTO: ");
+        sb.append(this.to.stream().map(msg -> "<" + msg + ">").collect(Collectors.joining(", ")));
+        sb.append("\nSUBJECT: ");
+        sb.append(this.subject);
+        sb.append("\n\n");
+        sb.append(this.body);
+        sb.append("\n.");
+
+        this.body = sb.toString();
+    }
+
     public String getBody() {
-        return body;
+        return this.body;
     }
 
     public void setBody(String body) {

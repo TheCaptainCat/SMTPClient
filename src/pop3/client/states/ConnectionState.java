@@ -14,7 +14,7 @@ public class ConnectionState extends State {
             this.client.setState(new WaitingForExtensionsState(this.client));
             this.client.sendPacket(new Packet("EHLO " + this.client.getMessage().getFromDomain()));
         } else {
-            System.out.println("PLS");
+            this.client.setState(new WritingState(this.client));
         }
     }
 }
